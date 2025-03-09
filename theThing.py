@@ -48,6 +48,10 @@ class MyComponent (object):
             #port was modified
             log.debug("Modified port: %s", event.port)
 
+    def _handle_PacketIn (self, event):
+        log.debug("Detected a new packet!")
+        log.debug(bytes(event.data).decode())
+
 
 def launch():
     core.registerNew(MyComponent)
