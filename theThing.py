@@ -26,7 +26,7 @@ from pox.core import core
 from pox.lib.util import dpid_to_str 
 from pox.lib.packet.arp import arp
 from pox.lib.packet.ethernet import ethernet, EthAddr
-from pox.lib.packet.ipv4 import IPAddr
+from pox.lib.packet.ipv6 import IPAddr
 
 import pox.openflow.libopenflow_01 as of
 
@@ -104,11 +104,11 @@ class MyComponent (object):
 
             tablemsg.match._in_port = int(a.hwsrc.raw.hex()[-1]) # might be wrong
 
-            tablemsg.match._dl_type = 0x800
+            tablemsg.match._dl_type = 0x86dd # WHY IS THIS NOT WORKING AAAAAAAAAAAAAAAAAAA
 
             #tablemsg.match.set_nw_dst(IPAddr("10.0.0.10"))
 
-            tablemsg.match.nw_dst = "10.0.0.10"
+            tablemsg.match.nw_dst = IPAddr("10.0.0.10")
 
             tablemsg.actions.append(of.ofp_action_nw_addr.set_dst(IPAddr("10.0.0.5")))
             tablemsg.actions.append(of.ofp_action_output(port = 5))
