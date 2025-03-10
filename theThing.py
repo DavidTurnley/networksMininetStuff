@@ -101,11 +101,11 @@ class MyComponent (object):
 
             tablemsg.match._in_port = int(a.hwsrc.raw.hex()[-1]) # might be wrong
 
-            tablemsg.match._dl_type = 0x0800
+            #tablemsg.match._dl_type = 0x0800
 
             
 
-            tablemsg.match.set_nw_dst(IPAddr("10.0.0.10"), 32)
+            #tablemsg.match.set_nw_dst(IPAddr("10.0.0.10"), 32)
 
             tablemsg.actions.append(of.ofp_action_nw_addr.set_dst(IPAddr("10.0.0.5")))
             tablemsg.actions.append(of.ofp_action_output(port = 5))
