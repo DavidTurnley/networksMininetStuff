@@ -11,10 +11,9 @@ Start:
 	echo "Let's a go!"
 
 refresh:
-	cd ~/networksMininetStuff
-	git pull
-	cd ~
+	git -C ~/networksMininetStuff  pull
 	cp ~/networksMininetStuff/theThing.py ~/pox/ext
+	cp ~/networksMininetStuff/Makefile ~
 
 
 startpox: 
