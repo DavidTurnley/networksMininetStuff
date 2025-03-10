@@ -59,7 +59,7 @@ class MyComponent (object):
             #port was modified
             log.debug("Modified port: %s", event.port)
 
-    def doArpRequest(packet, a, self, event):
+    def doArpRequest(self, packet, a, event):
         log.debug("Specifically an ARP Packet")
         log.debug(a)
         r = arp()
@@ -94,7 +94,7 @@ class MyComponent (object):
         
         
         if a:
-            msg = self.doArpRequest(packet, a, self, event)
+            msg = self.doArpRequest(packet, a, event)
             tablemsg = of.ofp_flow_mod()
             tablemsg.priority = 42 # no idea why 42, it's just what the docs are saying
 
