@@ -22,13 +22,21 @@ Good luck and I bid you well
 
 
 
-from pox.core import core # type: ignore
-from pox.lib.util import dpid_to_str # type: ignore
+from pox.core import core 
+from pox.lib.util import dpid_to_str 
+from pox.lib.packet.arp import arp
+from pox.lib.packet.ethernet import ethernet, EthAddr
+
+import pox.openflow.libopenflow_01 as of
 
 # use this to print stuff to the screen, there's a lot of garbage but just deal with it tbh
 log = core.getLogger()
 
 class MyComponent (object):
+
+    serverOneMac = b"\x00\x00\x00\x00\x00\x05"
+    serverTwoMac = b"\x00\x00\x00\x00\x00\x06"
+    
     def __init__ (self):
         core.openflow.addListeners(self)
 
@@ -50,7 +58,42 @@ class MyComponent (object):
 
     def _handle_PacketIn (self, event):
         log.debug("Detected a new packet!")
-        log.debug(bytes(event.data).decode())
+        packet = event.parsed
+        a = packet.find('arp')
+        
+        
+        if a:
+            log.debug("Specifically an ARP Packet")
+            log.debug(a)
+            a = arp(a)
+            r = arp()
+            r.hwtype = a.hwtype
+            r.prototype = a.prototype
+            r.hwlen = a.hwlen
+            r.protolen = a.protolen
+            r.opcode = arp.REPLY
+            r.hwdst = a.hwsrc
+            r.protodst = a.protosrc
+            r.protosrc = a.protodst
+            r.hwsrc = EthAddr(self.serverOneMac)
+            
+
+            
+
+            e = ethernet(type=packet.type, src=r.hwsrc,
+                         dst=a.hwsrc)
+            e.payload = r
+
+            msg = of.ofp_packet_out()
+            msg.data = e.pack()
+            msg.actions.append(of.ofp_action_output(port=of.OFPP_IN_PORT))
+            msg.in_port = event.port
+            event.connection.send(msg)
+
+        else:
+            log.debug("Not an ARP Packet...")
+            log.debug(event.parsed)
+        
 
 
 def launch():
