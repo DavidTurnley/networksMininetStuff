@@ -98,7 +98,9 @@ class MyComponent (object):
             tablemsg = of.ofp_flow_mod()
             tablemsg.priority = 42 # no idea why 42, it's just what the docs are saying
 
-            tablemsg.match._in_port = event.connection.ports(packet.src) # might be wrong
+            tablemsg.match._in_port = event.connection.ports[a.hwsrc] # might be wrong
+
+            
 
             tablemsg.match.nw_dst = IPAddr("10.0.0.10")
 
