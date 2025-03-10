@@ -45,6 +45,7 @@ class MyComponent (object):
 
     def _handle_ConnectionUp (self, event):
         log.debug("Switch %s has come up.", dpid_to_str(event.dpid))
+        self.connection = event.connection
 
     def _handle_PortStatus (self, event):
         if event.added :
@@ -109,7 +110,7 @@ class MyComponent (object):
             tablemsg.actions.append(of.ofp_action_nw_addr.set_dst(IPAddr("10.0.0.5")))
             tablemsg.actions.append(of.ofp_action_output(port = 5))
 
-            event.connection.send(tablemsg)
+            self.connection.send(tablemsg)
 
             event.connection.send(msg)
 
@@ -122,3 +123,4 @@ class MyComponent (object):
 def launch():
     core.registerNew(MyComponent)
     log.debug("Hello World inside the VM!")
+
