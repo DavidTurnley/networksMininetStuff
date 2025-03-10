@@ -106,7 +106,9 @@ class MyComponent (object):
 
             tablemsg.match._dl_type = 0x800
 
-            tablemsg.match.set_nw_dst(IPAddr("10.0.0.10"))
+            #tablemsg.match.set_nw_dst(IPAddr("10.0.0.10"))
+
+            tablemsg.match.nw_dst = "10.0.0.10"
 
             tablemsg.actions.append(of.ofp_action_nw_addr.set_dst(IPAddr("10.0.0.5")))
             tablemsg.actions.append(of.ofp_action_output(port = 5))
