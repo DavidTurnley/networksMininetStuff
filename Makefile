@@ -8,6 +8,9 @@ Start:
 	clear
 	echo "Let's a go!"
 
+refresh:
+	cp ./networksMininetStuff ./pox/ext
+
 
 startpox: 
 	cd ~ && cd pox && python pox.py openflow.of_01 --port=6633 log.level --DEBUG theThing &

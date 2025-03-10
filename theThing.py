@@ -65,7 +65,6 @@ class MyComponent (object):
         if a:
             log.debug("Specifically an ARP Packet")
             log.debug(a)
-            a = arp(a)
             r = arp()
             r.hwtype = a.hwtype
             r.prototype = a.prototype
