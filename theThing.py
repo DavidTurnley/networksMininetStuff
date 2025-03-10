@@ -99,7 +99,7 @@ class MyComponent (object):
             tablemsg.priority = 42 # no idea why 42, it's just what the docs are saying
 
             tablemsg.match._in_port = int(a.hwsrc.raw.hex()[-1]) # might be wrong
-            tablemsg.match.nw_dst = "10.0.0.10/32"
+            tablemsg.match.set_nw_dst(IPAddr("10.0.0.10"), 32)
 
             tablemsg.actions.append(of.ofp_action_nw_addr.set_dst(IPAddr("10.0.0.5")))
             tablemsg.actions.append(of.ofp_action_output(port = 5))
