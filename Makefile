@@ -25,7 +25,7 @@ stoppox:
 	clear
 
 startmini: 
-	sudo mn --topo single,6 --mac --controller remote,ip=127.0.0.1,port=6633 --switch ovsk,protocols=OpenFlow10
+	sudo mn --topo single,6 --mac --controller remote,ip=127.0.0.1,port=6633 --switch ovsk,protocols=OpenFlow10 -x
 
 wireshark:
 	sudo wireshark &
