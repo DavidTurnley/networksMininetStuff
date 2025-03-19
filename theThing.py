@@ -89,7 +89,7 @@ class MyComponent (object):
 
 
     def _handle_PacketIn (self, event):
-        log.debug("Detected a new packet!")
+        # log.debug("Detected a new packet!")
         packet = event.parsed
         a = packet.find('arp')
         
@@ -102,8 +102,6 @@ class MyComponent (object):
 
             newFlow.idle_timeout = 2000
             newFlow.hard_timeout = 2000
-
-            msg.buffer_id = 1
 
             
 
@@ -124,9 +122,11 @@ class MyComponent (object):
 
             event.connection.send(msg)
 
+        '''
         else:
             log.debug("Not an ARP Packet...")
-            log.debug(event.parsed)
+            log.debug(event.parsed)'
+        '''
         
 # making a small change
 
