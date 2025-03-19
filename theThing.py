@@ -100,8 +100,8 @@ class MyComponent (object):
 
             newFlow = of.ofp_flow_mod()
 
-            newFlow.idle_timeout = 1000000
-            newFlow.hard_timeout = 1000000
+            newFlow.idle_timeout = 2000
+            newFlow.hard_timeout = 2000
 
             msg.buffer_id = 1
 
