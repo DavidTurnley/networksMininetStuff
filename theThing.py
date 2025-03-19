@@ -96,24 +96,31 @@ class MyComponent (object):
         
         if a:
             msg = self.doArpRequest(packet, a, event)
-            tablemsg = of.ofp_flow_mod()
+            # newFlow = of.ofp_flow_mod()
 
-            tablemsg.command = 0
+            newFlow = of.ofp_flow_mod()
+
+            newFlow.idle_timeout = 1000000
+            newFlow.hard_timeout = 1000000
+
+            msg.buffer_id = 1
+
             
-            tablemsg.priority = 42 # no idea why 42, it's just what the docs are saying
 
-            tablemsg.match._in_port = int(a.hwsrc.raw.hex()[-1]) # might be wrong
+            newFlow.command = 0
+            
+            newFlow.priority = 42 # no idea why 42, it's just what the docs are saying
 
-            tablemsg.match._dl_type = 0x86dd # WHY IS THIS NOT WORKING AAAAAAAAAAAAAAAAAAA
+            newFlow.match._in_port = int(a.hwsrc.raw.hex()[-1]) # might be wrong
 
-            #tablemsg.match.set_nw_dst(IPAddr("10.0.0.10"))
+            newFlow.match._dl_type = 0x0800 # WHY IS THIS NOT WORKING AAAAAAAAAAAAAAAAAAA
 
-            tablemsg.match.nw_dst = IPAddr("10.0.0.10")
+            newFlow.match.nw_dst = IPAddr("10.0.0.10")
 
-            tablemsg.actions.append(of.ofp_action_nw_addr.set_dst(IPAddr("10.0.0.5")))
-            tablemsg.actions.append(of.ofp_action_output(port = 5))
+            newFlow.actions.append(of.ofp_action_nw_addr.set_dst(IPAddr("10.0.0.5")))
+            newFlow.actions.append(of.ofp_action_output(port = 5))
 
-            self.connection.send(tablemsg)
+            self.connection.send(newFlow)
 
             event.connection.send(msg)
 
