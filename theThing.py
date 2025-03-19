@@ -99,6 +99,7 @@ class MyComponent (object):
             # newFlow = of.ofp_flow_mod()
 
             newFlow = of.ofp_flow_mod()
+            newFlow.match = of.ofp_match()
 
             newFlow.idle_timeout = 2000
             newFlow.hard_timeout = 2000
@@ -113,7 +114,7 @@ class MyComponent (object):
 
             #newFlow.match._dl_type = 0x0800 # WHY IS THIS NOT WORKING AAAAAAAAAAAAAAAAAAA
 
-            newFlow.match.dl_type = 0x800
+            newFlow.match._dl_type = 0x800
 
             newFlow.match.nw_dst = (IPAddr("10.0.0.10"), 32)
 
