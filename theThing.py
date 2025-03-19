@@ -113,7 +113,7 @@ class MyComponent (object):
 
             newFlow.match._dl_type = 0x0800 # WHY IS THIS NOT WORKING AAAAAAAAAAAAAAAAAAA
 
-            newFlow.match.nw_dst = IPAddr("10.0.0.10")
+            newFlow.match.nw_dst = (IPAddr("10.0.0.10"), 32)
 
             newFlow.actions.append(of.ofp_action_nw_addr.set_dst(IPAddr("10.0.0.5")))
             newFlow.actions.append(of.ofp_action_output(port = 5))
