@@ -103,7 +103,7 @@ class MyComponent (object):
             newFlow.idle_timeout = 2000
             newFlow.hard_timeout = 2000
 
-            
+            newFlow.out_port = 5
 
             newFlow.command = 0
             

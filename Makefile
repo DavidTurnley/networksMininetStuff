@@ -29,3 +29,8 @@ startmini:
 
 wireshark:
 	sudo wireshark &
+
+fullreset:
+	make stoppox
+	make refresh
+	make startpox
