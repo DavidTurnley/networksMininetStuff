@@ -4,16 +4,16 @@ Start:
 	git clone http://github.com/noxrepo/pox
 	git clone https://github.com/mininet/mininet
 	mininet/util/install.sh -w
-	mv ~/networksMininetStuff/pox ~
-	mv ~/networksMininetStuff/mininet ~
-	cp ~/networksMininetStuff/theThing.py ~/pox/ext
+	mv ~/NetworksMininetStuff/pox ~
+	mv ~/NetworksMininetStuff/mininet ~
+	cp ~/NetworksMininetStuff/theThing.py ~/pox/ext
 	clear
 	echo "Let's a go!"
 
 refresh:
-	git -C ~/networksMininetStuff  pull
-	cp ~/networksMininetStuff/theThing.py ~/pox/ext
-	cp ~/networksMininetStuff/Makefile ~
+	git -C ~/NetworksMininetStuff  pull
+	cp ~/NetworksMininetStuff/theThing.py ~/pox/ext
+	cp ~/NetworksMininetStuff/Makefile ~
 
 
 startpox: 
