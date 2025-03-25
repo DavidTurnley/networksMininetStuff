@@ -114,14 +114,18 @@ class MyComponent (object):
 
             #newFlow.match._dl_type = 0x0800 # WHY IS THIS NOT WORKING AAAAAAAAAAAAAAAAAAA
 
-            newFlow.match._dl_type = 0x800
+            #newFlow.match._dl_type = 0x800
+
+            newFlow.match._dl_type = b'\x08\x00'
 
             newFlow.match.nw_dst = (IPAddr("10.0.0.10"), 32)
+
+            newFlow.match.nw_src = a.hwsrc
 
             newFlow.actions.append(of.ofp_action_nw_addr.set_dst(IPAddr("10.0.0.5")))
             newFlow.actions.append(of.ofp_action_output(port = 5))
 
-            of.ofp_match.fix(newFlow)
+            #of.ofp_match.fix(newFlow)
 
             self.connection.send(newFlow)
 
