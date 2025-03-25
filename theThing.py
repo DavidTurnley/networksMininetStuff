@@ -63,6 +63,7 @@ class MyComponent (object):
     def doArpRequest(self, packet, a, event):
         log.debug("Specifically an ARP Packet")
         log.debug(a)
+
         r = arp()
         r.hwtype = a.hwtype
         r.prototype = a.prototype
@@ -95,6 +96,8 @@ class MyComponent (object):
         
         
         if a:
+            if a.opcode is not arp.REQUEST:
+                return
             msg = self.doArpRequest(packet, a, event)
             # newFlow = of.ofp_flow_mod()
 
@@ -110,24 +113,14 @@ class MyComponent (object):
             
             newFlow.priority = 42 # no idea why 42, it's just what the docs are saying
 
-            newFlow.match._in_port = 1 # might be wrong
-
-            #newFlow.match._dl_type = 0x0800 # WHY IS THIS NOT WORKING AAAAAAAAAAAAAAAAAAA
+            newFlow.match._in_port = event.port
 
             newFlow.match.dl_type = 0x0800
 
-            
-
-            #newFlow.match._dl_type = b'\x08\x00'
-
             newFlow.match.nw_dst = (IPAddr("10.0.0.10"), 32)
-
-            #newFlow.match.nw_src = a.hwsrc
 
             newFlow.actions.append(of.ofp_action_nw_addr.set_dst(IPAddr("10.0.0.5")))
             newFlow.actions.append(of.ofp_action_output(port = 5))
-
-            #of.ofp_match.fix(newFlow)
 
             self.connection.send(newFlow)
 
