@@ -88,10 +88,10 @@ class MyComponent (object):
 
         r.hwsrc = EthAddr(ethString)
 
-        if a.protodst.toStr is not IPAddr("10.0.0.10").toStr:
+        if a.protodst.toStr() is not IPAddr("10.0.0.10").toStr():
             log.debug("Recieved non-standard arp request")
-            log.debug("a proto str: [" + a.protodst.toStr + "]")
-            log.debug("checkingAgainst: [" + IPAddr("10.0.0.10").toStr + "]")
+            log.debug("a proto str: [" + a.protodst.toStr() + "]")
+            log.debug("checkingAgainst: [" + IPAddr("10.0.0.10").toStr() + "]")
         else:
             log.debug("It's normal! Yay!")
 
@@ -155,7 +155,9 @@ class MyComponent (object):
             msg = self.doArpRequest(packet, a, event)
             # newFlow = of.ofp_flow_mod()
 
-            if a.protodst is IPAddr("10.0.0.10"):
+            a = cast(arp, a)
+
+            if a.protodst.toStr() is IPAddr("10.0.0.10").toStr():
                 self.makeAndSendFlows(event)
 
             event.connection.send(msg)
