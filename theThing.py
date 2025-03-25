@@ -82,7 +82,7 @@ class MyComponent (object):
             r.hwsrc = EthAddr(self.serverOneMac)
         else:
             log.debug(str(a.protodst.raw[-2]))
-            r.hwsrc = EthAddr("00:00:00:00:00:" + str(a.protodst.raw[-2])) #Maybe? ugh
+            r.hwsrc = EthAddr("00:00:00:00:00:0" + str(a.protodst.raw[-1])) #Maybe? ugh
             
 
             
