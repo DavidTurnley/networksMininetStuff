@@ -77,7 +77,15 @@ class MyComponent (object):
         r.hwdst = a.hwsrc
         r.protodst = a.protosrc
         r.protosrc = a.protodst
-        r.hwsrc = EthAddr(self.serverOneMac)
+
+
+        ethString = self.serverOneMac
+
+        r.hwsrc = EthAddr(ethString)
+
+        if a.protodst is not IPAddr("10.0.0.10"):
+            log.debug("Recieved non-standard arp request")
+            log.debug(a.protodst.raw.decode())
 
         '''
         if a.protodst is IPAddr("10.0.0.10"):
@@ -99,6 +107,32 @@ class MyComponent (object):
         msg.actions.append(of.ofp_action_output(port=of.OFPP_IN_PORT))
         msg.in_port = event.port
         return msg
+    
+    def makeAndSendFlows(self, event):
+        newClientFlow = of.ofp_flow_mod()
+
+        newClientFlow.out_port = 5
+
+        newClientFlow.match._in_port = event.port
+
+        newClientFlow.match.dl_type = 0x0800
+
+        newClientFlow.match.nw_dst = (IPAddr("10.0.0.10"), 32)
+
+        newClientFlow.actions.append(of.ofp_action_nw_addr.set_dst(IPAddr("10.0.0.5")))
+        newClientFlow.actions.append(of.ofp_action_output(port = 5))
+
+        self.connection.send(newClientFlow)
+
+        newHostFlow = of.ofp_flow_mod()
+        newHostFlow.out_port = event.port
+        newHostFlow.match._in_port = 5
+        newHostFlow.match.dl_type = 0x0800
+        newHostFlow.match.nw_dst = (IPAddr("10.0.0.0" + str(event.port)), 32)
+        newHostFlow.actions.append(of.ofp_action_nw_addr.set_src(IPAddr("10.0.0.10")))
+        newHostFlow.actions.append(of.ofp_action_output(port = event.port))
+
+        self.connection.send(newHostFlow)
 
 
     def _handle_PacketIn (self, event):
@@ -113,30 +147,8 @@ class MyComponent (object):
             msg = self.doArpRequest(packet, a, event)
             # newFlow = of.ofp_flow_mod()
 
-            newClientFlow = of.ofp_flow_mod()
-
-            newClientFlow.out_port = 5
-
-            newClientFlow.match._in_port = event.port
-
-            newClientFlow.match.dl_type = 0x0800
-
-            newClientFlow.match.nw_dst = (IPAddr("10.0.0.10"), 32)
-
-            newClientFlow.actions.append(of.ofp_action_nw_addr.set_dst(IPAddr("10.0.0.5")))
-            newClientFlow.actions.append(of.ofp_action_output(port = 5))
-
-            self.connection.send(newClientFlow)
-
-            newHostFlow = of.ofp_flow_mod()
-            newHostFlow.out_port = event.port
-            newHostFlow.match._in_port = 5
-            newHostFlow.match.dl_type = 0x0800
-            newHostFlow.match.nw_dst = (IPAddr("10.0.0.0" + str(event.port)), 32)
-            newHostFlow.actions.append(of.ofp_action_nw_addr.set_src(IPAddr("10.0.0.10")))
-            newHostFlow.actions.append(of.ofp_action_output(port = event.port))
-
-            self.connection.send(newHostFlow)
+            if a.protodst is IPAddr("10.0.0.10"):
+                self.makeAndSendFlows(event)
 
             event.connection.send(msg)
 
