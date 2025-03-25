@@ -27,6 +27,7 @@ from pox.lib.util import dpid_to_str
 from pox.lib.packet.arp import arp
 from pox.lib.packet.ethernet import ethernet, EthAddr
 from pox.lib.packet.ipv4 import IPAddr
+from typing import cast
 
 import pox.openflow.libopenflow_01 as of
 
@@ -68,6 +69,10 @@ class MyComponent (object):
         log.debug("Specifically an ARP Packet")
         log.debug(a)
 
+        a = cast(arp, a)
+
+        
+
         r = arp()
         r.hwtype = a.hwtype
         r.prototype = a.prototype
@@ -83,9 +88,11 @@ class MyComponent (object):
 
         r.hwsrc = EthAddr(ethString)
 
-        if a.protodst is not IPAddr("10.0.0.10"):
+        if a.protodst.toStr is not IPAddr("10.0.0.10").toStr:
             log.debug("Recieved non-standard arp request")
             log.debug(a.protodst.raw.decode())
+        else:
+            log.debug("It's normal! Yay!")
 
         '''
         if a.protodst is IPAddr("10.0.0.10"):
