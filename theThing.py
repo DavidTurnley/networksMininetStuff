@@ -66,7 +66,7 @@ class MyComponent (object):
             log.debug("Modified port: %s", event.port)
 
     def doArpRequest(self, packet, a, event):
-        log.debug("Specifically an ARP Packet")
+        log.debug("\n\nSpecifically an ARP Packet")
         log.debug(a)
 
         a = cast(arp, a)
@@ -90,7 +90,8 @@ class MyComponent (object):
 
         if a.protodst.toStr is not IPAddr("10.0.0.10").toStr:
             log.debug("Recieved non-standard arp request")
-            log.debug(a.protodst.raw.decode())
+            log.debug("a proto str: [" + a.protodst.toStr + "]")
+            log.debug("checkingAgainst: [" + IPAddr("10.0.0.10").toStr + "]")
         else:
             log.debug("It's normal! Yay!")
 
