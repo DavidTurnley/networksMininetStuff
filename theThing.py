@@ -77,14 +77,16 @@ class MyComponent (object):
         r.hwdst = a.hwsrc
         r.protodst = a.protosrc
         r.protosrc = a.protodst
+        r.hwsrc = EthAddr(self.serverOneMac)
 
+        '''
         if a.protodst is IPAddr("10.0.0.10"):
             r.hwsrc = EthAddr(self.serverOneMac)
         else:
-            ethString = "00:00:00:00:00:0" + str(a.protodst.raw[-1])
+            ethString = "00:00:00:00:00:" + str(a.protodst.raw[-1])
             log.debug(ethString)
             r.hwsrc = EthAddr(ethString) #Maybe? ugh
-            
+        '''
 
             
 
