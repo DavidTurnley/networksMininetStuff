@@ -110,13 +110,15 @@ class MyComponent (object):
             
             newFlow.priority = 42 # no idea why 42, it's just what the docs are saying
 
-            newFlow.match._in_port = int(a.hwsrc.raw.hex()[-1]) # might be wrong
+            newFlow.match._in_port = 1 # might be wrong
 
             #newFlow.match._dl_type = 0x0800 # WHY IS THIS NOT WORKING AAAAAAAAAAAAAAAAAAA
 
-            #newFlow.match._dl_type = 0x800
+            newFlow.match.dl_type = 0x0800
 
-            newFlow.match._dl_type = b'\x08\x00'
+            
+
+            #newFlow.match._dl_type = b'\x08\x00'
 
             newFlow.match.nw_dst = (IPAddr("10.0.0.10"), 32)
 
