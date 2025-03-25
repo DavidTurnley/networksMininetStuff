@@ -39,6 +39,10 @@ class MyComponent (object):
 
     serverOneMac = b"\x00\x00\x00\x00\x00\x05"
     serverTwoMac = b"\x00\x00\x00\x00\x00\x06"
+
+    serverOnePort = 5
+    serverTwoPort = 6
+
     
     def __init__ (self):
         core.openflow.addListeners(self)
@@ -101,28 +105,30 @@ class MyComponent (object):
             msg = self.doArpRequest(packet, a, event)
             # newFlow = of.ofp_flow_mod()
 
-            newFlow = of.ofp_flow_mod()
-            newFlow.match = of.ofp_match()
+            newClientFlow = of.ofp_flow_mod()
 
-            newFlow.idle_timeout = 2000
-            newFlow.hard_timeout = 2000
+            newClientFlow.out_port = 5
 
-            newFlow.out_port = 5
+            newClientFlow.match._in_port = event.port
 
-            newFlow.command = 0
-            
-            newFlow.priority = 42 # no idea why 42, it's just what the docs are saying
+            newClientFlow.match.dl_type = 0x0800
 
-            newFlow.match._in_port = event.port
+            newClientFlow.match.nw_dst = (IPAddr("10.0.0.10"), 32)
 
-            newFlow.match.dl_type = 0x0800
+            newClientFlow.actions.append(of.ofp_action_nw_addr.set_dst(IPAddr("10.0.0.5")))
+            newClientFlow.actions.append(of.ofp_action_output(port = 5))
 
-            newFlow.match.nw_dst = (IPAddr("10.0.0.10"), 32)
+            self.connection.send(newClientFlow)
 
-            newFlow.actions.append(of.ofp_action_nw_addr.set_dst(IPAddr("10.0.0.5")))
-            newFlow.actions.append(of.ofp_action_output(port = 5))
+            newHostFlow = of.ofp_flow_mod()
+            newHostFlow.out_port = event.port
+            newHostFlow.match._in_port = 5
+            newHostFlow.match.dl_type = 0x0800
+            newHostFlow.match.nw_dst = (IPAddr("10.0.0.0" + str(event.port)), 32)
+            newHostFlow.actions.append(of.ofp_action_nw_addr.set_src(IPAddr("10.0.0.10")))
+            newHostFlow.actions.append(of.ofp_action_output(port = event.port))
 
-            self.connection.send(newFlow)
+            self.connection.send(newHostFlow)
 
             event.connection.send(msg)
 
