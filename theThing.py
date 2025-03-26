@@ -147,6 +147,8 @@ class MyComponent (object):
             
             if(self.d.__contains__(int(event.port))):
                 msg = self.doArpRequest(packet, a, event, self.d[int(event.port)])
+                log.debug("Handling stored arp:")
+                log.debug(self.d.__str__)
                 return
             else:
                 msg = self.doArpRequest(packet, a, event, self.sendToOne) # Might as well make the arp packet right away, sends later
@@ -163,7 +165,7 @@ class MyComponent (object):
 
             event.connection.send(msg) # Delayed sending of the arp packet to ensure that nothing is sent before the flows
 
-            log.debug(str(self.sendToOne))
+            
 
 def launch():
     core.registerNew(MyComponent)
