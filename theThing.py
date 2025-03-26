@@ -113,6 +113,8 @@ class MyComponent (object):
 
         serverPort = self.serverOnePort if self.sendToOne else self.serverTwoPort
 
+        newClientFlow.cookie = (event.port * 100) + serverPort
+
         newClientFlow.out_port = serverPort
 
         newClientFlow.match._in_port = event.port
@@ -129,8 +131,10 @@ class MyComponent (object):
         self.connection.send(newClientFlow)
 
         newHostFlow = of.ofp_flow_mod()
+        newHostFlow.cookie = (serverPort * 100) + event.port
         newHostFlow.out_port = event.port
         newHostFlow.match._in_port = serverPort
+        newHostFlow.match.nw_src = serverIP
         newHostFlow.match.dl_type = 0x0800
         newHostFlow.match.nw_dst = (IPAddr("10.0.0.0" + str(event.port)), 32)
         newHostFlow.actions.append(of.ofp_action_nw_addr.set_src(IPAddr("10.0.0.10")))
