@@ -159,7 +159,10 @@ class MyComponent (object):
                 log.debug("Sending client " + str(event.port) + " to: " + debugMessage)
 
             event.connection.send(msg)
+
             self.sendToOne = not self.sendToOne
+
+            log.debug(str(self.sendToOne))
 
         '''
         else:
