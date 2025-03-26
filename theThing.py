@@ -149,6 +149,7 @@ class MyComponent (object):
                 msg = self.doArpRequest(packet, a, event, self.d[int(event.port)])
                 log.debug("Handling stored arp:")
                 log.debug(self.d.__str__())
+                event.connection.send(msg)
                 return
             else:
                 msg = self.doArpRequest(packet, a, event, self.sendToOne) # Might as well make the arp packet right away, sends later
