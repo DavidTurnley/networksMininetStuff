@@ -1,26 +1,8 @@
-
-
-
 '''
-Okay so from what I've learned so far, the "core" just does a lot of general stuff
+Made by David Turnley for cs4480 PA2
 
-here's where a lot of the important info is: https://noxrepo.github.io/pox-doc/html/#openflow-in-pox
-
-it is pain
-
-_handle_[eventName] is the method name for a specific event handler
-
-message stuff is here: https://noxrepo.github.io/pox-doc/html/#openflow-messages
-
-ofp_flow_mod is is the way to add/modify a rule in the switch
-
-information on the actions that can be taken from a rule are here: https://noxrepo.github.io/pox-doc/html/#openflow-actions
-
-Good luck and I bid you well
-
+Nox Docs: https://noxrepo.github.io/pox-doc/html/#openflow-in-pox
 '''
-
-
 
 from pox.core import core 
 from pox.lib.util import dpid_to_str 
@@ -31,9 +13,6 @@ from typing import cast
 
 import pox.openflow.libopenflow_01 as of
 
-import pox.lib.packet as pkt
-
-# use this to print stuff to the screen, there's a lot of garbage but just deal with it tbh
 log = core.getLogger()
 
 class MyComponent (object):
@@ -70,10 +49,12 @@ class MyComponent (object):
             #port was modified
             log.debug("Modified port: %s", event.port)
 
+    # Handles arp requests from clients and servers
     def doArpRequest(self, packet, a, event):
-        log.debug("\n\nSpecifically an ARP Packet")
+        log.debug("\n\nRecieved an ARP Request")
         log.debug(a)
 
+        #Technically not needed, but helps development
         a = cast(arp, a)
 
         r = arp()
@@ -88,16 +69,16 @@ class MyComponent (object):
 
         ethString = self.serverOneMac if self.sendToOne else self.serverTwoMac
 
+        # Checking to see if the arp request is going to the switch, or to a client
         if a.protodst.toStr() != IPAddr("10.0.0.10").toStr():
             log.debug("Recieved non-standard arp request")
-            log.debug("a proto str: [" + a.protodst.toStr() + "]")
-            log.debug("checkingAgainst: [" + IPAddr("10.0.0.10").toStr() + "]")
             ethString = "00:00:00:00:00:0" + str(a.protodst.toStr()[-1])
         else:
             log.debug("It's normal! Yay!")
 
         r.hwsrc = EthAddr(ethString)
 
+        # Below is largely book keeping
         e = ethernet(type=packet.type, src=r.hwsrc,
                          dst=a.hwsrc)
         e.payload = r
@@ -108,37 +89,43 @@ class MyComponent (object):
         msg.in_port = event.port
         return msg
     
+    # Creates the needed flows to switch automatically
     def makeAndSendFlows(self, event):
-        newClientFlow = of.ofp_flow_mod()
 
         serverPort = self.serverOnePort if self.sendToOne else self.serverTwoPort
+        serverIP = self.serverOneIP if self.sendToOne else self.serverTwoIP
 
-        newClientFlow.cookie = (event.port * 16) + serverPort
+        clientPort = event.port
+        clientIP = (IPAddr("10.0.0.0" + str(clientPort)), 32) #yes this is kind of a hackey way to do it but whatever
+                                                              # it is true for this assignment
+        
+        # Making the flow for the client towards the server
+        newClientFlow = of.ofp_flow_mod()
+
+        newClientFlow.cookie = (clientPort * 16) + serverPort # cookie appears as [clientport][serverport] ie, 15
 
         newClientFlow.out_port = serverPort
-
-        newClientFlow.match._in_port = event.port
-
+        newClientFlow.match._in_port = clientPort
         newClientFlow.match.dl_type = 0x0800
-
         newClientFlow.match.nw_dst = (IPAddr("10.0.0.10"), 32)
-
-        newClientFlow.match.nw_src = (IPAddr("10.0.0.0" + str(event.port)), 32)
-
-        serverIP = self.serverOneIP if self.sendToOne else self.serverTwoIP
+        newClientFlow.match.nw_src = clientIP
 
         newClientFlow.actions.append(of.ofp_action_nw_addr.set_dst(IPAddr(serverIP)))
         newClientFlow.actions.append(of.ofp_action_output(port = serverPort))
 
         self.connection.send(newClientFlow)
 
+        # Making the flow for the server towards the client
         newHostFlow = of.ofp_flow_mod()
-        newHostFlow.cookie = (serverPort * 16) + event.port
-        newHostFlow.out_port = event.port
-        newHostFlow.match._in_port = serverPort
-        newHostFlow.match.nw_src = serverIP
+
+        newHostFlow.cookie = (serverPort * 16) + clientPort # cookie appears as [serverport][clientport] ie, 51
+
+        newHostFlow.out_port = clientPort
         newHostFlow.match.dl_type = 0x0800
-        newHostFlow.match.nw_dst = (IPAddr("10.0.0.0" + str(event.port)), 32)
+        newHostFlow.match._in_port = serverPort
+        newHostFlow.match.nw_dst = clientIP
+        newHostFlow.match.nw_src = serverIP
+
         newHostFlow.actions.append(of.ofp_action_nw_addr.set_src(IPAddr("10.0.0.10")))
         newHostFlow.actions.append(of.ofp_action_output(port = event.port))
 
@@ -146,7 +133,6 @@ class MyComponent (object):
 
 
     def _handle_PacketIn (self, event):
-        # log.debug("Detected a new packet!")
         packet = event.parsed
         a = packet.find('arp')
         
@@ -154,30 +140,22 @@ class MyComponent (object):
         if a:
             if a.opcode is not arp.REQUEST:
                 return
-            msg = self.doArpRequest(packet, a, event)
-            # newFlow = of.ofp_flow_mod()
+            msg = self.doArpRequest(packet, a, event) # Might as well make the arp packet right away, sends later
 
-            a = cast(arp, a)
+            a = cast(arp, a) #Technically not needed, just helps with development
 
             if a.protodst.toStr() == IPAddr("10.0.0.10").toStr():
                 self.makeAndSendFlows(event)
                 debugMessage = "5" if self.sendToOne else "6"
                 log.debug("Sending client " + str(event.port) + " to: " + debugMessage)
+
                 self.sendToOne = not self.sendToOne
 
-            event.connection.send(msg)
+            event.connection.send(msg) # Delayed sending of the arp packet to ensure that nothing is sent before the flows
 
             log.debug(str(self.sendToOne))
 
-        '''
-        else:
-            log.debug("Not an ARP Packet...")
-            log.debug(event.parsed)'
-        '''
-        
-# making a small change
-
 def launch():
     core.registerNew(MyComponent)
-    log.debug("Hello World inside the VM!")
+    log.debug("\n\nHello World inside the VM!\n\n")
 
