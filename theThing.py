@@ -86,7 +86,7 @@ class MyComponent (object):
 
         ethString = self.serverOneMac
 
-        r.hwsrc = EthAddr(ethString)
+        
 
         
 
@@ -94,8 +94,11 @@ class MyComponent (object):
             log.debug("Recieved non-standard arp request")
             log.debug("a proto str: [" + a.protodst.toStr() + "]")
             log.debug("checkingAgainst: [" + IPAddr("10.0.0.10").toStr() + "]")
+            ethString = "00:00:00:00:00:0" + str(a.protodst.toStr()[-1])
         else:
             log.debug("It's normal! Yay!")
+
+        r.hwsrc = EthAddr(ethString)
 
         '''
         if a.protodst is IPAddr("10.0.0.10"):
