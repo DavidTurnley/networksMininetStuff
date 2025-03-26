@@ -41,6 +41,11 @@ class MyComponent (object):
     serverOneMac = b"\x00\x00\x00\x00\x00\x05"
     serverTwoMac = b"\x00\x00\x00\x00\x00\x06"
 
+    serverOneIP = "10.0.0.5"
+    serverTwoIP = "10.0.0.6"
+
+    sendToOne = True
+
     serverOnePort = 5
     serverTwoPort = 6
 
@@ -71,8 +76,6 @@ class MyComponent (object):
 
         a = cast(arp, a)
 
-        
-
         r = arp()
         r.hwtype = a.hwtype
         r.prototype = a.prototype
@@ -83,12 +86,7 @@ class MyComponent (object):
         r.protodst = a.protosrc
         r.protosrc = a.protodst
 
-
-        ethString = self.serverOneMac
-
-        
-
-        
+        ethString = self.serverOneMac if self.sendToOne else self.serverTwoMac
 
         if a.protodst.toStr() != IPAddr("10.0.0.10").toStr():
             log.debug("Recieved non-standard arp request")
@@ -99,17 +97,6 @@ class MyComponent (object):
             log.debug("It's normal! Yay!")
 
         r.hwsrc = EthAddr(ethString)
-
-        '''
-        if a.protodst is IPAddr("10.0.0.10"):
-            r.hwsrc = EthAddr(self.serverOneMac)
-        else:
-            ethString = "00:00:00:00:00:" + str(a.protodst.raw[-1])
-            log.debug(ethString)
-            r.hwsrc = EthAddr(ethString) #Maybe? ugh
-        '''
-
-            
 
         e = ethernet(type=packet.type, src=r.hwsrc,
                          dst=a.hwsrc)
@@ -124,7 +111,9 @@ class MyComponent (object):
     def makeAndSendFlows(self, event):
         newClientFlow = of.ofp_flow_mod()
 
-        newClientFlow.out_port = 5
+        serverPort = self.serverOnePort if self.sendToOne else self.serverTwoPort
+
+        newClientFlow.out_port = serverPort
 
         newClientFlow.match._in_port = event.port
 
@@ -132,14 +121,16 @@ class MyComponent (object):
 
         newClientFlow.match.nw_dst = (IPAddr("10.0.0.10"), 32)
 
-        newClientFlow.actions.append(of.ofp_action_nw_addr.set_dst(IPAddr("10.0.0.5")))
-        newClientFlow.actions.append(of.ofp_action_output(port = 5))
+        serverIP = self.serverOneIP if self.sendToOne else self.serverTwoIP
+
+        newClientFlow.actions.append(of.ofp_action_nw_addr.set_dst(IPAddr(serverIP)))
+        newClientFlow.actions.append(of.ofp_action_output(port = serverPort))
 
         self.connection.send(newClientFlow)
 
         newHostFlow = of.ofp_flow_mod()
         newHostFlow.out_port = event.port
-        newHostFlow.match._in_port = 5
+        newHostFlow.match._in_port = serverPort
         newHostFlow.match.dl_type = 0x0800
         newHostFlow.match.nw_dst = (IPAddr("10.0.0.0" + str(event.port)), 32)
         newHostFlow.actions.append(of.ofp_action_nw_addr.set_src(IPAddr("10.0.0.10")))
@@ -164,8 +155,11 @@ class MyComponent (object):
 
             if a.protodst.toStr() == IPAddr("10.0.0.10").toStr():
                 self.makeAndSendFlows(event)
+                debugMessage = "5" if self.sendToOne else "6"
+                log.debug("Sending client " + str(event.port) + " to: " + debugMessage)
 
             event.connection.send(msg)
+            self.sendToOne = not self.sendToOne
 
         '''
         else:
