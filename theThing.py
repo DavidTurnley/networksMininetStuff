@@ -153,6 +153,8 @@ class MyComponent (object):
             else:
                 msg = self.doArpRequest(packet, a, event, self.sendToOne) # Might as well make the arp packet right away, sends later
                 self.d[int(event.port)] = self.sendToOne
+                log.debug("Updating stored arps")
+                log.debug(self.d.__str__())
 
             a = cast(arp, a) #Technically not needed, just helps with development
 
