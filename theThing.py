@@ -28,6 +28,10 @@ class MyComponent (object):
     serverOnePort = 5
     serverTwoPort = 6
 
+    d = {-1 : True}
+
+
+
     
     def __init__ (self):
         core.openflow.addListeners(self)
@@ -50,7 +54,7 @@ class MyComponent (object):
             log.debug("Modified port: %s", event.port)
 
     # Handles arp requests from clients and servers
-    def doArpRequest(self, packet, a, event):
+    def doArpRequest(self, packet, a, event, sendToFirst):
         log.debug("\n\nRecieved an ARP Request")
         log.debug(a)
 
@@ -67,7 +71,7 @@ class MyComponent (object):
         r.protodst = a.protosrc
         r.protosrc = a.protodst
 
-        ethString = self.serverOneMac if self.sendToOne else self.serverTwoMac
+        ethString = self.serverOneMac if sendToFirst else self.serverTwoMac
 
         # Checking to see if the arp request is going to the switch, or to a client
         if a.protodst.toStr() != IPAddr("10.0.0.10").toStr():
@@ -140,7 +144,13 @@ class MyComponent (object):
         if a:
             if a.opcode is not arp.REQUEST:
                 return
-            msg = self.doArpRequest(packet, a, event) # Might as well make the arp packet right away, sends later
+            
+            if(self.d.__contains__(int(event.port))):
+                msg = self.doArpRequest(packet, a, event, self.d[int(event.port)])
+                return
+            else:
+                msg = self.doArpRequest(packet, a, event, self.sendToOne) # Might as well make the arp packet right away, sends later
+                self.d[int(event.port)] = self.sendToOne
 
             a = cast(arp, a) #Technically not needed, just helps with development
 
