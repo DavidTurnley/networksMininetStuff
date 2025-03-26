@@ -157,10 +157,9 @@ class MyComponent (object):
                 self.makeAndSendFlows(event)
                 debugMessage = "5" if self.sendToOne else "6"
                 log.debug("Sending client " + str(event.port) + " to: " + debugMessage)
+                self.sendToOne = not self.sendToOne
 
             event.connection.send(msg)
-
-            self.sendToOne = not self.sendToOne
 
             log.debug(str(self.sendToOne))
 
